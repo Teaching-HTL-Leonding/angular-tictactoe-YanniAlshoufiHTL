@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 type Cell = { value: ' ' | 'X' | 'O' };
 
@@ -7,7 +8,7 @@ let currentSymbol: 'X' | 'O' = 'O';
 @Component({
     selector: 'app-game',
     standalone: true,
-    imports: [],
+    imports: [RouterLink],
     templateUrl: './game.component.html',
 })
 export class GameComponent {
@@ -34,48 +35,42 @@ export class GameComponent {
         const winner = this.checkWinner();
         this.gameState = winner === undefined ? 'running' : 'stopped';
 
-        console.info(winner);
+        if (this.gameState === 'stopped') {
+            setTimeout(() => {
+                alert(winner === 'draw' ? "It's a draw!" : `Player ${winner} wins!`);
+            }, 0);
+        }
     }
 
     checkWinner(): undefined | 'X' | 'O' | 'draw' {
-        // Check rows
-        for (const row of this.board) {
-            if (row.every((cell) => cell.value !== ' ')) {
-                return row[0].value === 'X' ? 'X' : 'O';
-            }
-        }
+        const lines = [
+            // Rows
+            ...this.board,
+            // Columns
+            ...this.board[0].map((_, colIndex) => this.board.map((row) => row[colIndex])),
+            // Diagonals
+            this.board.map((_, index) => this.board[index][index]),
+            this.board.map((_, index) => this.board[index][GameComponent.NUMBER_COLS - 1 - index]),
+        ];
 
-        // Check columns
-        for (let i = 0; i < GameComponent.NUMBER_COLS; i++) {
-            if (this.board.every((row) => row[i].value === 'X')) {
+        for (const line of lines) {
+            if (line.every((cell) => cell.value === 'X')) {
                 return 'X';
             }
-            if (this.board.every((row) => row[i].value === 'O')) {
+            if (line.every((cell) => cell.value === 'O')) {
                 return 'O';
             }
         }
 
-        // Check diagonals
-        if (
-            this.board[1][1].value !== ' ' &&
-            this.board[0][0].value === this.board[1][1].value &&
-            this.board[1][1].value === this.board[2][2].value
-        ) {
-            return this.board[0][0].value === 'X' ? 'X' : 'O';
-        }
-
-        if (
-            this.board[1][1].value !== ' ' &&
-            this.board[0][2].value === this.board[1][1].value &&
-            this.board[1][1].value === this.board[2][0].value
-        ) {
-            return this.board[0][2].value === 'X' ? 'X' : 'O';
-        }
-
-        if (this.board.every((row) => row.every((cell) => cell.value !== ' '))) {
+        if (this.board.flat().every((cell) => cell.value !== ' ')) {
             return 'draw';
         }
 
         return undefined;
+    }
+
+    reset() {
+        this.board = this.board.map((row) => row.map(() => ({ value: ' ' })));
+        this.gameState = 'running';
     }
 }

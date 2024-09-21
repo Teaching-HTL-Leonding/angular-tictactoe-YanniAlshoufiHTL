@@ -4,10 +4,30 @@
     <div class="grid aspect-square w-1/2 select-none grid-cols-3">
         @for (row of board; track $index) {
             @for (cell of row; track $index) {
-                <button class="border border-red-500 text-5xl" (click)="reveal(cell)">
-                    <pre>{{ cell.value }}</pre>
+                <button
+                    class="border border-red-500 text-5xl [&_span]:aspect-square [&_span]:min-w-10"
+                    (click)="reveal(cell)"
+                >
+                    @switch (cell.value) {
+                        @case ('X') {
+                            <span class="icon-[mingcute--close-line]"></span>
+                        }
+                        @case ('O') {
+                            <span class="icon-[mingcute--round-line]"></span>
+                        }
+                        @default {
+                            <span class="icon-[mingcute--square-fill] text-white"></span>
+                        }
+                    }
                 </button>
             }
         }
     </div>
+
+    <button
+        class="rounded bg-rose-400 px-5 py-2 text-lg text-rose-100 transition-transform hover:scale-110 focus:scale-100 active:scale-95"
+        (click)="reset()"
+    >
+        Reset
+    </button>
 </div>
